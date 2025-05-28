@@ -4,6 +4,11 @@ app_publisher = "ramees"
 app_description = "Monitors backups and notifies Uptime Kuma"
 app_email = "ramees@enfono.in"
 app_license = "mit"
+scheduler_events = {
+    "daily": [
+        "kuma_backup_monitor.backup_check.check_google_backup"
+    ]
+}
 
 # Apps
 # ------------------
