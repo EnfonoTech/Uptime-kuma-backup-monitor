@@ -6,7 +6,7 @@ app_email = "ramees@enfono.in"
 app_license = "mit"
 scheduler_events = {
     "daily": [
-        "kuma_backup_monitor.backup_check.check_google_backup"
+        "kuma_backup_monitor.backup_check.check_gdrive_backup"
     ]
 }
 
