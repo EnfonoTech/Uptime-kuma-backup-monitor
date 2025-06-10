@@ -5,11 +5,12 @@ app_description = "Monitors backups and notifies Uptime Kuma"
 app_email = "ramees@enfono.in"
 app_license = "mit"
 scheduler_events = {
-    "daily": [
-        "kuma_backup_monitor.backup_check.check_gdrive_backup"
-    ]
+    "cron": {
+        "0 5 * * *": [
+            "kuma_backup_monitor.backup_check.check_gdrive_backup"
+        ]
+    }
 }
-
 # Apps
 # ------------------
 
