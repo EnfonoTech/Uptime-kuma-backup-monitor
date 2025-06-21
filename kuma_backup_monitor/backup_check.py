@@ -3,7 +3,6 @@ from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 import frappe
 import requests
-import os
 
 def check_gdrive_backup():
     try:
@@ -11,7 +10,7 @@ def check_gdrive_backup():
         folder_id = gdrive_settings.backup_folder_id
 
         creds_dict = {
-            "token": None,  # token will be refreshed
+            "token": None,
             "refresh_token": gdrive_settings.get_password("refresh_token"),
             "token_uri": "https://oauth2.googleapis.com/token",
             "client_id": frappe.get_single("Google Settings").client_id,
@@ -24,7 +23,6 @@ def check_gdrive_backup():
 
         after_time = (datetime.utcnow() - timedelta(hours=24)).isoformat() + "Z"
         query = f"'{folder_id}' in parents and modifiedTime > '{after_time}'"
-
         results = service.files().list(
             q=query,
             fields="files(name, modifiedTime)",
@@ -33,7 +31,7 @@ def check_gdrive_backup():
 
         files = results.get("files", [])
         recent_backup_found = any(
-            f["name"].endswith((".sql.gz", ".tgz")) for f in files
+            f["name"].endswith((".sql.gz", ".tgz", ".tar", ".json")) for f in files
         )
 
         site = frappe.local.site
@@ -41,9 +39,37 @@ def check_gdrive_backup():
         msg = f"{site}: Google Drive Backup {'OK' if recent_backup_found else 'Missing'}"
         push_to_kuma(status, msg)
 
-    except Exception as e:
+        if recent_backup_found:
+            delete_old_gdrive_backups(service, folder_id)
+
+    except Exception:
         frappe.log_error(frappe.get_traceback(), "Google Drive Check Error")
         push_to_kuma("down", f"{frappe.local.site}: Google Drive API Error")
+
+def delete_old_gdrive_backups(service, folder_id):
+    before_time = (datetime.utcnow() - timedelta(days=5)).isoformat() + "Z"
+    query = f"'{folder_id}' in parents and modifiedTime < '{before_time}'"
+
+    results = service.files().list(
+        q=query,
+        fields="files(id, name, modifiedTime)",
+        pageSize=1000
+    ).execute()
+
+    files = results.get("files", [])
+
+    for f in files:
+        if (
+            f["name"].endswith(".sql.gz") or
+            f["name"].endswith(".json") or
+            f["name"].endswith("-files.tar") or
+            f["name"].endswith("-private-files.tar")
+        ):
+            try:
+                service.files().delete(fileId=f["id"]).execute()
+                frappe.logger().info(f"Deleted old file: {f['name']}")
+            except Exception:
+                frappe.log_error(frappe.get_traceback(), f"Delete Failed: {f['name']}")
 
 def get_push_url():
     try:
