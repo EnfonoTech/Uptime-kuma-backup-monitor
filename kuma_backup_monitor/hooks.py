@@ -4,13 +4,7 @@ app_publisher = "ramees"
 app_description = "Monitors backups and notifies Uptime Kuma"
 app_email = "ramees@enfono.in"
 app_license = "mit"
-scheduler_events = {
-    "cron": {
-        "0 5 * * *": [
-            "kuma_backup_monitor.backup_check.check_gdrive_backup"
-        ]
-    }
-}
+scheduler_events = {"cron": {"0 5 * * *": ["kuma_backup_monitor.backup_check.check_gdrive_backup"]}}
 # Apps
 # ------------------
 
@@ -247,4 +241,3 @@ scheduler_events = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-
