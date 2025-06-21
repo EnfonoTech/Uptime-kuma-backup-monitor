@@ -86,5 +86,5 @@ def push_to_kuma(status, msg):
     try:
         full_url = f"{url}?status={status}&msg={msg}"
         requests.get(full_url, timeout=10)
-    except:
-        frappe.log_error("Kuma push failed", "Kuma Backup Monitor")
+    except Exception as e:
+        frappe.log_error(str(e), "Kuma push failed")
