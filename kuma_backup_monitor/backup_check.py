@@ -46,7 +46,7 @@ def check_gdrive_backup():
 		frappe.log_error(frappe.get_traceback(), "Google Drive Check Error")
 		push_to_kuma("down", f"{frappe.local.site}: Google Drive API Error")
 
-#delete 5 days old backup
+#delete 5 days old backups
 def delete_old_gdrive_backups(service, folder_id):
 	before_time = (datetime.utcnow() - timedelta(days=5)).isoformat() + "Z"
 	query = f"'{folder_id}' in parents and modifiedTime < '{before_time}'"
